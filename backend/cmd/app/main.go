@@ -13,7 +13,10 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/oganes5796/habbit-tracker/internal/client"
 	"github.com/oganes5796/habbit-tracker/internal/config"
+	"github.com/oganes5796/habbit-tracker/internal/handler"
+	"github.com/oganes5796/habbit-tracker/internal/repository"
 	"github.com/oganes5796/habbit-tracker/internal/server"
+	"github.com/oganes5796/habbit-tracker/internal/service"
 )
 
 func main() {
@@ -32,12 +35,16 @@ func main() {
 	defer pool.Close(ctx)
 	slog.Info("Successfully connected to PostgreSQL")
 
+	repository := repository.NewRepository(pool)
+	service := service.NewService(repository)
+	handlers := handler.NewImplementation(service)
+
 	srv := &server.Server{}
 	go func() {
 		if err := srv.Run(
 			os.Getenv("HOST"),
 			os.Getenv("PORT"),
-			handlers.InitRoutes(), // исправить
+			handlers.InitRoutes(),
 		); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			slog.Error("error occurred while running http server", "error", err)
 		}
