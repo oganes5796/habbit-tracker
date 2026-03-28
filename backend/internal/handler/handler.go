@@ -28,8 +28,12 @@ func (im *Implemintation) InitRoutes() http.Handler {
 		w.Write([]byte(`{"message":"hello"}`))
 	})
 
+	r.Route("/auth", func(r chi.Router) {
+		r.Post("/", im.CreateAuth)
+	})
+
 	r.Route("/api", func(r chi.Router) {
-		r.Post("/", im.Create)
+		r.Post("/", im.CreateHabit)
 	})
 
 	return r

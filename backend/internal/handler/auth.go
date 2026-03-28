@@ -7,8 +7,8 @@ import (
 	"github.com/oganes5796/habbit-tracker/internal/model"
 )
 
-func (im *Implemintation) CreateHabit(w http.ResponseWriter, r *http.Request) {
-	var info model.HabitInfo
+func (im *Implemintation) CreateAuth(w http.ResponseWriter, r *http.Request) {
+	var info model.AuthInfo
 
 	if err := json.NewDecoder(r.Body).Decode(&info); err != nil {
 		w.WriteHeader(http.StatusBadRequest)
@@ -18,11 +18,11 @@ func (im *Implemintation) CreateHabit(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	id, err := im.serv.HabitService.Create(r.Context(), &info)
+	id, err := im.serv.AuthService.Create(r.Context(), &info)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		_ = json.NewEncoder(w).Encode(map[string]string{
-			"error": "error in creating habit handler",
+			"error": "error in creating auth handler",
 		})
 
 		return

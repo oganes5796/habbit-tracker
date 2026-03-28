@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	tableName = "habits"
+	tableHabitName = "habits"
 )
 
 type habitRepo struct {
@@ -22,7 +22,7 @@ func NewHabitRepo(conn *pgx.Conn) *habitRepo {
 
 func (r *habitRepo) Create(ctx context.Context, habit *model.HabitInfo) (int, error) {
 	var id int
-	query := "INSERT INTO " + tableName + " (user_id, title, type, target_value) VALUES ($1, $2, $3, $4) RETURNING id"
+	query := "INSERT INTO " + tableHabitName + " (user_id, title, type, target_value) VALUES ($1, $2, $3, $4) RETURNING id"
 	err := r.conn.QueryRow(ctx, query, habit.UserID, habit.Title, habit.Type, habit.TargetValue).Scan(&id)
 	if err != nil {
 		return 0, errors.New("failed to create habit in repo: " + err.Error())
