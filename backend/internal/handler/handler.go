@@ -5,6 +5,7 @@ import (
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	"github.com/oganes5796/habbit-tracker/internal/handler/middlewarelog"
 	"github.com/oganes5796/habbit-tracker/internal/service"
 )
 
@@ -19,8 +20,9 @@ func NewImplementation(serv *service.Service) *Implemintation {
 func (im *Implemintation) InitRoutes() http.Handler {
 	r := chi.NewRouter()
 
-	r.Use(middleware.Logger)
-	r.Use(middleware.Recoverer)
+	r.Use(middleware.RequestID)
+	r.Use(middlewarelog.LoggerMiddleware)
+	r.Use(middlewarelog.RecoverMiddleware)
 
 	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", "application/json")

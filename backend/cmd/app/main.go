@@ -3,7 +3,6 @@ package main
 import (
 	"context"
 	"errors"
-	"log/slog"
 	"net/http"
 	"os"
 	"os/signal"
@@ -17,6 +16,8 @@ import (
 	"github.com/oganes5796/habbit-tracker/internal/repository"
 	"github.com/oganes5796/habbit-tracker/internal/server"
 	"github.com/oganes5796/habbit-tracker/internal/service"
+	"github.com/oganes5796/habbit-tracker/pkg/logger"
+	"go.uber.org/zap"
 )
 
 func main() {
@@ -27,13 +28,15 @@ func main() {
 		panic("Error loading .env file")
 	}
 
+	logger.Init("info", true)
+
 	cfg := config.NewCfgDB()
 	pool, err := client.NewPostgresDB(ctx, cfg)
 	if err != nil {
 		panic("Failed to connect to the database")
 	}
 	defer pool.Close(ctx)
-	slog.Info("Successfully connected to PostgreSQL")
+	logger.Info(ctx, "Successfully connected to PostgreSQL")
 
 	repository := repository.NewRepository(pool)
 	service := service.NewService(repository)
@@ -46,23 +49,23 @@ func main() {
 			os.Getenv("PORT"),
 			handlers.InitRoutes(),
 		); err != nil && !errors.Is(err, http.ErrServerClosed) {
-			slog.Error("error occurred while running http server", "error", err)
+			logger.Error(ctx, "error occurred while running http server", zap.Error(err))
 		}
 	}()
-	slog.Info("App started")
+	logger.Info(ctx, "App started")
 
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
 
-	slog.Info("App shutting down")
+	logger.Info(ctx, "App shutting down")
 
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
 	if err := srv.Shutdown(ctx); err != nil {
-		slog.Error("error occurred on server shutting down", "error", err)
+		logger.Error(ctx, "error occurred on server shutting down", zap.Error(err))
 	}
 
-	slog.Info("App exited")
+	logger.Info(ctx, "App exited")
 }
